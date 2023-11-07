@@ -42,6 +42,7 @@ def read_bff_file(filename):
     with open(filename, 'r') as file:
         lines = file.readlines()
         read_grid = False
+
         for line in lines:
             line = line.strip()
             if 'GRID START' in line:
@@ -110,19 +111,31 @@ class Block:
         self.position = position
         self.fixed = fixed
 
-        def interact_with_laser(self, laser_direction):
-            if self.block_type == 'A':  # Reflect block
-                # Assuming that a reflect block simply inverts the direction of the laser
-                return (-laser_direction[0], -laser_direction[1])
-            elif self.block_type == 'B':  # Opaque block
-                # Opaque blocks absorb the laser, thus no new direction is returned
-                return None
-            elif self.block_type == 'C':  # Refract block
-                # Refract blocks allow the laser to pass through unchanged
-                reflected_direction = (-laser_direction[0], -laser_direction[1])
-                return [laser_direction, reflected_direction]
+    def interact_with_laser(self, laser_position, laser_direction):
+        # Determine which direction the laser came from
+        # Based on the Grid design, we think that the center is in odd coordinates and the edge is in even coordinates
+        x_in = (laser_position[0] % 2 == 0)
+        y_in = (laser_position[1] % 2 == 0)
+
+        # Interact with laser based on Block type
+        if self.block_type == 'A':  # reflect
+            if x_in and not y_in:
+                # The laser enters from left or right
+                return (-laser_direction[0], laser_direction[1])
+            elif y_in and not x_in:
+                # The laser comes in from above or below
+                return (laser_direction[0], -laser_direction[1])
+        elif self.block_type == 'C':  # refract
+            # The refracted laser keeps the direction unchanged and adds a reflection direction
+            if x_in and not y_in:
+                return [(laser_direction[0], laser_direction[1]), (-laser_direction[0], laser_direction[1])]
+            elif y_in and not x_in:
+                return [(laser_direction[0], laser_direction[1]), (laser_direction[0], -laser_direction[1])]
+        # For other types of blocks, or if the laser is absorbed, return None
+        return None
         
 class Laser:
+    
     def __init__(self, position, direction):
         self.position = position
         self.direction = direction
@@ -142,7 +155,7 @@ def main(bff_file):
     else:
         print("No solution found.")
 
-if __name__ == "__main__":
-    bff_file = "./Lazors/Lazor data/dark_1.bff"  # replace with your .bff file name
+if __name__ == "__main__":                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+    bff_file = "./Lazors/Lazor data/tiny_5.bff"  # replace with your .bff file name
     print(read_bff_file(bff_file))
     # main(bff_file)
