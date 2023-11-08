@@ -209,10 +209,10 @@ def main(bff_file):
         print("No solution found.")
 
 if __name__ == "__main__":                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-    bff_file = "./Lazors/Lazor data/tiny_5.bff"  # replace with your .bff file name
-    # print(read_bff_file(bff_file))
+    bff_file = "./Lazor data/dark_1.bff"  # replace with your .bff file name
+    print(read_bff_file(bff_file))
     grid, lasers, targets, blocks = read_bff_file(bff_file)
-    # print(expand_grid(grid, targets))
+    print(expand_grid(grid, targets))
     expanded_grid = expand_grid(grid, targets)
     # print(simulate_laser_movement(grid, lasers[0], targets, blocks))
     # main(bff_file)
