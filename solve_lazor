@@ -1,0 +1,82 @@
+class Solution:
+    # find the solution of the lazor problem
+
+    def __init__(self, x_dimension, y_dimension):
+        self.x_dimension = x_dimension
+        self.y_dimension = y_dimension
+        self.a = None
+        self.b = None
+        self.c = None
+
+    def chk_pos(position, x_dimension, y_dimension):
+
+        '''
+        This function checks whether the point is valid
+
+        parameters:
+
+            position: *tuple*
+                the coordinates of a point
+
+            x_dimension: *int*
+                the length of gird in x axis
+
+            y_dimension: *int*
+                the length of gird in y axis
+
+        returns:
+
+            *bool*
+            True if within the grid otherwise False
+        '''
+
+        return (0 < position[0] < x_dimension) and (0 < position[1] < y_dimension)
+        
+
+    def lasor_path(self, lasor_position, lasor_direction, x_dimension, y_dimension):
+
+        '''
+        This function calculates the lazor path given a laser point
+
+        parameters:
+
+            lasor_position: *tuple*
+                coordinates of lazor point
+            
+            lasor_direction: *tuple*
+                directions of lazor
+                x = 1 go right
+                x = -1 go left
+                y = 1 go down
+                y = -1 go up
+
+            x_dimension: *int*
+                the length of gird in x axis
+
+            y_dimension: *int*
+                the length of gird in y axis
+
+        returns:
+
+            path: *list*
+                all  points that lazor passes
+
+        '''
+
+        path = []
+
+        x = lasor_position[0]
+        y = lasor_position[1]
+
+        x_dirct = lasor_direction[0]
+        y_dirct = lasor_direction[1]
+
+        path.append((x, y))
+
+        next_pos = [x + x_dirct, y + y_dirct]
+
+        while self.chk_pos(next_pos):
+            path.append(tuple(next_pos))
+      
+        return path
+
