@@ -1,39 +1,7 @@
 #import libraries here
 
 def read_bff_file(filename):
-    '''
-    Reads a '.bff' file and extracts the grid layout, available blocks, lasers, and required points for the Lazor game.
-
-    The '.bff' file format is assumed to be as follows:
-    - Grid definition starts with 'GRID START' and ends with 'GRID STOP'.
-    - Each row in the grid is represented by a line of characters between 'GRID START' and 'GRID STOP'.
-      'o' represents an empty space where blocks can be placed.
-      'A', 'B', 'C' represent fixed reflect, opaque, and refract blocks respectively.
-      'x' represents a space where no blocks can be placed.
-    - After the grid definition, available movable blocks are specified by lines starting with 'A', 'B', or 'C' followed by the quantity.
-    - Lasers are defined by lines starting with 'L' followed by their position and direction vectors.
-    - Points that lasers need to intersect are defined by lines starting with 'P' followed by the coordinates.
-
-    Parameters:
-    filename : str
-        The path to the '.bff' file to be read.
-
-    Returns:
-    grid : list of list of str
-        A 2D list representing the game grid where each position can be:
-        - 'o': Empty space where blocks can be placed.
-        - 'A': Fixed reflect block.
-        - 'B': Fixed opaque block.
-        - 'C': Fixed refract block.
-        - 'x': Space where no blocks can be placed.
-    blocks : dict
-        A dictionary with keys 'A', 'B', and 'C' corresponding to the available reflect, opaque, and refract blocks and their quantities.
-    lasers : list of tuples
-        A list where each tuple contains the position (x, y) and the direction vector (dx, dy) for each laser.
-    points : list of tuples
-        A list of tuples where each tuple represents the coordinates (x, y) of the points that the lasers need to intersect.
-
-    '''
+   
     grid = []
     blocks = {'A': 0, 'B': 0, 'C': 0}  # initialize block counts
     lasers = []
@@ -57,7 +25,7 @@ def read_bff_file(filename):
                 grid_line = []
                 for x, char in enumerate(line):
                     if char == 'o':
-                        grid_line.append(None)
+                        grid_line.append('o')
                     elif char == 'x':
                         grid_line.append('x')
                     elif char in 'ABC':
@@ -72,25 +40,45 @@ def read_bff_file(filename):
                 parts = line.split()
                 position = (int(parts[1]), int(parts[2]))
                 direction = (int(parts[3]), int(parts[4]))
-                lasers.append((position, direction))
+                lasers.append(Laser(position, direction))
             elif line.startswith('P '):
                 parts = line.split()
                 position = (int(parts[1]), int(parts[2]))
                 targets.append(position)
 
-    # Processing grid to include fixed blocks
-    # processed_grid = []
-    # for y, row in enumerate(grid):
-    #     processed_row = []
-    #     for x, cell in enumerate(row):
-    #         if cell == 'o':
-    #             processed_row.append(None)
-    #         elif cell in blocks:
-    #             processed_row.append(Block(cell, fixed=True))
-    #     processed_grid.append(processed_row)
-
     return grid, lasers, targets, blocks
 
+def expand_grid(raw_grid, targets):
+    # 计算扩展后的网格大小
+    expanded_height = len(raw_grid) * 2 + 1
+    expanded_width = len(raw_grid[0]) * 2 + 1
+
+    # 创建扩展网格，默认值为0
+    expanded_grid = [[0 for i in range(expanded_width)] for i in range(expanded_height)]
+
+    # 映射原始网格到扩展网格
+    for y, row in enumerate(raw_grid):
+        for x, value in enumerate(row):
+            # 计算扩展网格上的中心点坐标
+            center_y = 2 * y + 1
+            center_x = 2 * x + 1
+            
+            # 根据原始网格的值填充扩展网格的中心点
+            if value == 'o':
+                expanded_grid[center_y][center_x] = 1
+            elif value == 'x':
+                expanded_grid[center_y][center_x] = 2
+            elif value == 'A':
+                expanded_grid[center_y][center_x] = 3
+            elif value == 'B':
+                expanded_grid[center_y][center_x] = 4
+            elif value == 'C':
+                expanded_grid[center_y][center_x] = 5
+    
+    for xt, yt in targets:
+        expanded_grid[yt][xt] = 6
+
+    return expanded_grid
 
 # Define the Block class
 class Block:
@@ -144,6 +132,71 @@ class Laser:
         # Move the laser to the next position based on its direction
         self.position = (self.position[0] + self.direction[0], self.position[1] + self.direction[1])
 
+def simulate(grid, lasers, blocks):
+    """
+    Simulate the movement of lasers through a grid with blocks.
+    
+    Parameters:
+    grid : list of list of int
+        The grid representation, where numbers indicate different entities (0 for empty, 1 for block, etc.)
+    lasers : list of Laser
+        The lasers present in the grid at the start of simulation.
+    blocks : list of Block
+        The blocks present in the grid that can interact with the lasers.
+        
+    Returns:
+    list of tuple
+        The positions of lasers that hit target points.
+    """
+    # Define the grid size
+    grid_size = (len(grid[0]), len(grid))
+    
+    # Convert the list of blocks to a dictionary for easy access
+    block_dict = {block.position: block for block in blocks}
+    
+    # Initialize the set for storing laser positions that hit targets
+    hit_targets = set()
+    
+    # Loop until there are no more lasers to simulate
+    while lasers:
+        new_lasers = []
+        for laser in lasers:
+            # Move the laser one step
+            laser.move()
+            
+            # Check if laser is out of bounds and skip if it is
+            if not (0 <= laser.position[0] < grid_size[0] and 0 <= laser.position[1] < grid_size[1]):
+                continue
+            
+            # Check if the laser hits a target point
+            if grid[laser.position[1]][laser.position[0]] == 6:
+                hit_targets.add(laser.position)
+                continue  # Laser stops if it hits a target point
+            
+            # Check if the laser hits a block
+            if laser.position in block_dict:
+                block = block_dict[laser.position]
+                interaction_result = block.interact_with_laser(laser.position, laser.direction)
+                
+                if interaction_result is None:
+                    continue  # Laser stops if it hits an opaque block or if it's absorbed
+                elif isinstance(interaction_result, list):
+                    # If block is a refract block, keep the original direction and add the new one
+                    for new_direction in interaction_result:
+                        new_lasers.append(Laser(laser.position, new_direction))
+                else:
+                    # If block is a reflect block, change the laser direction
+                    laser.direction = interaction_result
+                    new_lasers.append(laser)
+                    
+        # Update the lasers for the next iteration
+        lasers = new_lasers
+    
+    # Return the positions of lasers that hit target points
+    return list(hit_targets)
+
+
+
 def main(bff_file):
     board, lasers, targets, blocks = read_bff_file(bff_file)
 
@@ -157,5 +210,9 @@ def main(bff_file):
 
 if __name__ == "__main__":                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
     bff_file = "./Lazors/Lazor data/tiny_5.bff"  # replace with your .bff file name
-    print(read_bff_file(bff_file))
+    # print(read_bff_file(bff_file))
+    grid, lasers, targets, blocks = read_bff_file(bff_file)
+    # print(expand_grid(grid, targets))
+    expanded_grid = expand_grid(grid, targets)
+    # print(simulate_laser_movement(grid, lasers[0], targets, blocks))
     # main(bff_file)
