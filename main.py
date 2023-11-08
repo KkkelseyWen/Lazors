@@ -30,7 +30,7 @@ def read_bff_file(filename):
                         grid_line.append('x')
                     elif char in 'ABC':
                         # If it belongs to one of A、B、C ，we new one Block bject
-                        block = Block(char, (len(grid) - 1, x), fixed=True)
+                        block = Block(char, (2*(len(grid) - 1), 2*x+1), fixed=True)
                         grid_line.append(block.block_type)
                 grid.append(grid_line)
             elif line.startswith('A ') or line.startswith('B ') or line.startswith('C '):
@@ -132,6 +132,38 @@ class Laser:
         # Move the laser to the next position based on its direction
         self.position = (self.position[0] + self.direction[0], self.position[1] + self.direction[1])
 
+def meet_block(grid, laser, blocks):
+    """
+    Check if the laser interacts with a block by checking both horizontally and vertically adjacent points.
+    """
+    x, y = laser.position
+    dx, dy = laser.direction
+    new_lasers = []
+
+    # Check both adjacent points
+    adjacent_points = [(x + dx, y), (x, y + dy)]
+    for point in adjacent_points:
+        if point in blocks:
+            block = blocks[point]
+            interaction_result = block.interact_with_laser(point, laser.direction)
+            
+            if interaction_result:
+                if isinstance(interaction_result, list):
+                    # If the block is refractive, it creates multiple new lasers
+                    for new_direction in interaction_result:
+                        new_lasers.append(Laser(point, new_direction))
+                else:
+                    # For a reflective block, change the direction
+                    new_lasers.append(Laser(point, interaction_result))
+                break  # If we interact with a block, we don't check the other point
+
+    if not new_lasers:
+        # If no block interaction, the laser continues in the same direction
+        new_lasers.append(Laser((x + dx, y + dy), laser.direction))
+
+    return new_lasers
+
+
 def simulate(grid, lasers, blocks):
     """
     Simulate the movement of lasers through a grid with blocks.
@@ -197,22 +229,12 @@ def simulate(grid, lasers, blocks):
 
 
 
-def main(bff_file):
-    board, lasers, targets, blocks = read_bff_file(bff_file)
-
-    solution = solve(board, lasers, targets, blocks)
-
-    if solution:
-        output_solution(solution, output_type="txt")
-        print("Solution saved to solution.txt")
-    else:
-        print("No solution found.")
-
 if __name__ == "__main__":                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-    bff_file = "./Lazor data/dark_1.bff"  # replace with your .bff file name
+    bff_file = "./Lazors/Lazor data/tiny_5.bff"  # replace with your .bff file name
     print(read_bff_file(bff_file))
     grid, lasers, targets, blocks = read_bff_file(bff_file)
-    print(expand_grid(grid, targets))
+    # print(expand_grid(grid, targets))
     expanded_grid = expand_grid(grid, targets)
+    print(meet_block(expanded_grid,lasers[0],blocks)[0].position)
     # print(simulate_laser_movement(grid, lasers[0], targets, blocks))
     # main(bff_file)
