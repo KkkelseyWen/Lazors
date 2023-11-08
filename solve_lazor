@@ -119,13 +119,13 @@ class Solution:
         return path_lazor, path_block
     
 
-    def reflect(self, point, direction, blo_pos):
+    def reflect(self, position, direction, blo_pos):
         '''
         This function finds the relection point the lazor direction after reflection
 
         parameters:
 
-            point: *tuple*
+            position: *tuple*
                 coordinates of lazor point
 
             direction: *tuple*
@@ -142,10 +142,18 @@ class Solution:
             ref_point: *tuple*
                 coordinates of reflection point
         '''
+        _, tmp_block = self.path(position, direction)
 
-        new_dir
+        if blo_pos not in tmp_block:
+            return 'This block does not reflect!'
+        
 
-        ref_point
+
+    def opaque(self, ):
+
+    
+    def refract(self, ):
+
 
 
 
