@@ -4,8 +4,8 @@ def read_bff_file(filename):
    
     grid = []
     blocks = {'A': 0, 'B': 0, 'C': 0}  # initialize block counts
-    lasers = []
-    targets = []
+    lazors = []
+    targets = set()
 
     with open(filename, 'r') as file:
         lines = file.readlines()
@@ -40,13 +40,13 @@ def read_bff_file(filename):
                 parts = line.split()
                 position = (int(parts[1]), int(parts[2]))
                 direction = (int(parts[3]), int(parts[4]))
-                lasers.append(Laser(position, direction))
+                lazors.append(Lazor(position, direction))
             elif line.startswith('P '):
                 parts = line.split()
                 position = (int(parts[1]), int(parts[2]))
-                targets.append(position)
+                targets.add(position)
 
-    return grid, lasers, targets, blocks
+    return grid, lazors, targets, blocks
 
 def expand_grid(raw_grid, targets):
     # 计算扩展后的网格大小
@@ -99,71 +99,71 @@ class Block:
         self.position = position
         self.fixed = fixed
 
-    def interact_with_laser(self, laser_position, laser_direction):
-        # Determine which direction the laser came from
+    def interact_with_Lazor(self, Lazor_position, Lazor_direction):
+        # Determine which direction the Lazor came from
         # Based on the Grid design, we think that the center is in odd coordinates and the edge is in even coordinates
-        x_in = (laser_position[0] % 2 == 0)
-        y_in = (laser_position[1] % 2 == 0)
+        x_in = (Lazor_position[0] % 2 == 0)
+        y_in = (Lazor_position[1] % 2 == 0)
 
-        # Interact with laser based on Block type
+        # Interact with Lazor based on Block type
         if self.block_type == 'A':  # reflect
             if x_in and not y_in:
-                # The laser enters from left or right
-                return (-laser_direction[0], laser_direction[1])
+                # The Lazor enters from left or right
+                return (-Lazor_direction[0], Lazor_direction[1])
             elif y_in and not x_in:
-                # The laser comes in from above or below
-                return (laser_direction[0], -laser_direction[1])
+                # The Lazor comes in from above or below
+                return (Lazor_direction[0], -Lazor_direction[1])
         elif self.block_type == 'C':  # refract
-            # The refracted laser keeps the direction unchanged and adds a reflection direction
+            # The refracted Lazor keeps the direction unchanged and adds a reflection direction
             if x_in and not y_in:
-                return [(laser_direction[0], laser_direction[1]), (-laser_direction[0], laser_direction[1])]
+                return [(Lazor_direction[0], Lazor_direction[1]), (-Lazor_direction[0], Lazor_direction[1])]
             elif y_in and not x_in:
-                return [(laser_direction[0], laser_direction[1]), (laser_direction[0], -laser_direction[1])]
-        # For other types of blocks, or if the laser is absorbed, return None
+                return [(Lazor_direction[0], Lazor_direction[1]), (Lazor_direction[0], -Lazor_direction[1])]
+        # For other types of blocks, or if the Lazor is absorbed, return None
         return None
         
-class Laser:
+class Lazor:
     
     def __init__(self, position, direction):
         self.position = position
         self.direction = direction
 
     def move(self):
-        # Move the laser to the next position based on its direction
+        # Move the Lazor to the next position based on its direction
         self.position = (self.position[0] + self.direction[0], self.position[1] + self.direction[1])
 
-def meet_block(grid, laser, blocks):
+def meet_block(grid, Lazor, blocks):
     """
-    Check if the laser interacts with a block by checking both horizontally and vertically adjacent points.
+    Check if the Lazor interacts with a block by checking both horizontally and vertically adjacent points.
     """
-    x, y = laser.position
-    dx, dy = laser.direction
-    new_lasers = []
+    x, y = Lazor.position
+    dx, dy = Lazor.direction
+    new_Lazors = []
 
     # Check both adjacent points
     adjacent_positions = [(x + dx, y), (x, y + dy)]
     for position in adjacent_positions:
         if position in blocks:
             block = blocks[position]
-            interaction_result = block.interact_with_laser(position, laser.direction)
+            interaction_result = block.interact_with_Lazor(Lazor.position, Lazor.direction)
             
             if interaction_result:
                 if isinstance(interaction_result, list):
-                    # If the block is refractive, it creates multiple new lasers
+                    # If the block is refractive, it creates multiple new Lazors
                     for new_direction in interaction_result:
-                        new_lasers.append(Laser(position, new_direction))
+                        new_Lazors.append(Lazor(Lazor.position, new_direction))
                 else:
                     # For a reflective block, change the direction
-                    new_lasers.append(Laser(position, interaction_result))
+                    new_Lazors.append(Lazor(Lazor.position, interaction_result))
                 break  # If we interact with a block, we don't check the other point
 
-    if not new_lasers:
-        # If no block interaction, the laser continues in the same direction
-        new_lasers.append(Laser((x + dx, y + dy), laser.direction))
+    if not new_Lazors:
+        # If no block interaction, the Lazor continues in the same direction
+        new_Lazors.append(Lazor(Lazor.position, Lazor.direction))
 
-    return new_lasers
+    return new_Lazors
 
-def pos_chk(grid, laser):
+def pos_chk(grid, Lazor):
     '''
     This function is used to check if the lazor and its next step
     is inside the grid, if it is not, return to the last step.
@@ -180,79 +180,74 @@ def pos_chk(grid, laser):
 
     grid_size = (len(grid[0]), len(grid))
 
-    return 0 <= laser.position[0] < grid_size[0] and 0 <= laser.position[1] < grid_size[1]
+    return 0 <= Lazor.position[0] < grid_size[0] and 0 <= Lazor.position[1] < grid_size[1]
 
-def simulate(grid, lasers, blocks):
+def simulate(grid, Lazors, blocks):
     """
-    Simulate the movement of lasers through a grid with blocks.
+    Simulate the movement of Lazors through a grid with blocks.
     
     Parameters:
     grid : list of list of int
         The grid representation, where numbers indicate different entities (0 for empty, 1 for block, etc.)
-    lasers : list of Laser
-        The lasers present in the grid at the start of simulation.
+    Lazors : list of Lazor
+        The Lazors present in the grid at the start of simulation.
     blocks : list of Block
-        The blocks present in the grid that can interact with the lasers.
+        The blocks present in the grid that can interact with the Lazors.
         
     Returns:
     list of tuple
-        The positions of lasers that hit target points.
+        The positions of Lazors that hit target points.
     """
     # Define the grid size
     grid_size = (len(grid[0]), len(grid))
     
     # Convert the list of blocks to a dictionary for easy access
     block_dict = {block.position: block for block in blocks}
-    
-    # Initialize the set for storing laser positions that hit targets
+    print(block_dict)
+    # Initialize the set for storing Lazor positions that hit targets
     hit_targets = set()
     
-    # Loop until there are no more lasers to simulate
-    while lasers:
-        new_lasers = []
-        for laser in lasers:
-            # Move the laser one step
-            laser.move()
+    # Loop until there are no more Lazors to simulate
+    while Lazors:
+        new_Lazors = []
+        for Lazor in Lazors:
+            # Move the Lazor one step
+            Lazor.move()
             
-            # Check if laser is out of bounds and skip if it is
-            if not (0 <= laser.position[0] < grid_size[0] and 0 <= laser.position[1] < grid_size[1]):
+            # Check if Lazor is out of bounds and skip if it is
+            if pos_chk(grid, Lazor):
                 continue
             
-            # Check if the laser hits a target point
-            if grid[laser.position[1]][laser.position[0]] == 6:
-                hit_targets.add(laser.position)
-                continue  # Laser stops if it hits a target point
+            # Check if the Lazor hits a target point
+            if grid[Lazor.position[1]][Lazor.position[0]] == 't':
+                hit_targets.add(Lazor.position)
+                continue  # Lazor stops if it hits a target point
             
-            # Check if the laser hits a block
-            if laser.position in block_dict:
-                block = block_dict[laser.position]
-                interaction_result = block.interact_with_laser(laser.position, laser.direction)
-                
-                if interaction_result is None:
-                    continue  # Laser stops if it hits an opaque block or if it's absorbed
-                elif isinstance(interaction_result, list):
-                    # If block is a refract block, keep the original direction and add the new one
-                    for new_direction in interaction_result:
-                        new_lasers.append(Laser(laser.position, new_direction))
-                else:
-                    # If block is a reflect block, change the laser direction
-                    laser.direction = interaction_result
-                    new_lasers.append(laser)
+            # Check if the Lazor hits a block
+            new_Lazors = meet_block(grid, Lazor, blocks)
                     
-        # Update the lasers for the next iteration
-        lasers = new_lasers
+        # Update the Lazors for the next iteration
+        Lazors = new_Lazors
     
-    # Return the positions of lasers that hit target points
-    return list(hit_targets)
+    # Return the positions of Lazors that hit target points
+    return hit_targets
 
+'''记录一下想到的，simulate()会返回目前光路经过的目标点的集合。
+现在还至少需要两个函数， 一个solve()，其中targets == hit_targests时问题解决，循环停止。
+另一个函数写着写着忘了，大致应该是在solve()中涉及block怎么放的问题的。
+哦还会有一个save结果的，保存类型还要商量下，现在空想一下光路不太好保存，保存grid的话应该很简单，但是也得需要block放完记录一下。
+'''
 
 
 if __name__ == "__main__":                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
     bff_file = "./Lazors/Lazor data/tiny_5.bff"  # replace with your .bff file name
-    print(read_bff_file(bff_file))
-    grid, lasers, targets, blocks = read_bff_file(bff_file)
-    print(expand_grid(grid, targets))
-    # expanded_grid = expand_grid(grid, targets)
-    # print(meet_block(expanded_grid,lasers[0],blocks)[0].position)
-    # print(simulate_laser_movement(grid, lasers[0], targets, blocks))
+    # print(read_bff_file(bff_file))
+    grid, lazors, targets, blocks = read_bff_file(bff_file)
+    # print(expand_grid(grid, targets))
+    print(blocks)
+    print(lazors[0].position)
+    print(targets)
+    expanded_grid = expand_grid(grid, targets)
+    # print(meet_block(expanded_grid,lazors[0],blocks)[0].position)
+    # print(simulate_Lazor_movement(grid, lazors[0], targets, blocks))
     # main(bff_file)
