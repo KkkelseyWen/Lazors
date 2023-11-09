@@ -65,18 +65,18 @@ def expand_grid(raw_grid, targets):
             
             # 根据原始网格的值填充扩展网格的中心点
             if value == 'o':
-                expanded_grid[center_y][center_x] = 1
+                expanded_grid[center_y][center_x] = 'o'
             elif value == 'x':
-                expanded_grid[center_y][center_x] = 2
+                expanded_grid[center_y][center_x] = 'x'
             elif value == 'A':
-                expanded_grid[center_y][center_x] = 3
+                expanded_grid[center_y][center_x] = 'A'
             elif value == 'B':
-                expanded_grid[center_y][center_x] = 4
+                expanded_grid[center_y][center_x] = 'B'
             elif value == 'C':
-                expanded_grid[center_y][center_x] = 5
+                expanded_grid[center_y][center_x] = 'C'
     
     for xt, yt in targets:
-        expanded_grid[yt][xt] = 6
+        expanded_grid[yt][xt] = 't'
 
     return expanded_grid
 
@@ -141,20 +141,20 @@ def meet_block(grid, laser, blocks):
     new_lasers = []
 
     # Check both adjacent points
-    adjacent_points = [(x + dx, y), (x, y + dy)]
-    for point in adjacent_points:
-        if point in blocks:
-            block = blocks[point]
-            interaction_result = block.interact_with_laser(point, laser.direction)
+    adjacent_positions = [(x + dx, y), (x, y + dy)]
+    for position in adjacent_positions:
+        if position in blocks:
+            block = blocks[position]
+            interaction_result = block.interact_with_laser(position, laser.direction)
             
             if interaction_result:
                 if isinstance(interaction_result, list):
                     # If the block is refractive, it creates multiple new lasers
                     for new_direction in interaction_result:
-                        new_lasers.append(Laser(point, new_direction))
+                        new_lasers.append(Laser(position, new_direction))
                 else:
                     # For a reflective block, change the direction
-                    new_lasers.append(Laser(point, interaction_result))
+                    new_lasers.append(Laser(position, interaction_result))
                 break  # If we interact with a block, we don't check the other point
 
     if not new_lasers:
@@ -163,6 +163,24 @@ def meet_block(grid, laser, blocks):
 
     return new_lasers
 
+def pos_chk(grid, laser):
+    '''
+    This function is used to check if the lazor and its next step
+    is inside the grid, if it is not, return to the last step.
+
+    **Parameters:**
+
+        grid:*list,list,string*
+            The grid contains a list of lists that can represent the grid
+
+    **Returns**
+
+        True if the lazer is still in the grid
+    '''
+
+    grid_size = (len(grid[0]), len(grid))
+
+    return 0 <= laser.position[0] < grid_size[0] and 0 <= laser.position[1] < grid_size[1]
 
 def simulate(grid, lasers, blocks):
     """
@@ -233,8 +251,8 @@ if __name__ == "__main__":
     bff_file = "./Lazors/Lazor data/tiny_5.bff"  # replace with your .bff file name
     print(read_bff_file(bff_file))
     grid, lasers, targets, blocks = read_bff_file(bff_file)
-    # print(expand_grid(grid, targets))
-    expanded_grid = expand_grid(grid, targets)
-    print(meet_block(expanded_grid,lasers[0],blocks)[0].position)
+    print(expand_grid(grid, targets))
+    # expanded_grid = expand_grid(grid, targets)
+    # print(meet_block(expanded_grid,lasers[0],blocks)[0].position)
     # print(simulate_laser_movement(grid, lasers[0], targets, blocks))
     # main(bff_file)
