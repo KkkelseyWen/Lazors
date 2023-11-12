@@ -1,4 +1,5 @@
-#import libraries here
+import itertools
+import os
 
 def read_bff_file(filename):
    
@@ -29,9 +30,7 @@ def read_bff_file(filename):
                     elif char == 'x':
                         grid_line.append('x')
                     elif char in 'ABC':
-                        # If it belongs to one of A、B、C ，we new one Block bject
-                        block = Block(char, (2*(len(grid) - 1), 2*x+1), fixed=True)
-                        grid_line.append(block.block_type)
+                        grid_line.append(char)
                 grid.append(grid_line)
             elif line.startswith('A ') or line.startswith('B ') or line.startswith('C '):
                 block_type, count = line.split()
@@ -54,7 +53,7 @@ def expand_grid(raw_grid, targets):
     expanded_width = len(raw_grid[0]) * 2 + 1
 
     # 创建扩展网格，默认值为0
-    expanded_grid = [[0 for i in range(expanded_width)] for i in range(expanded_height)]
+    expanded_grid = [['0' for i in range(expanded_width)] for i in range(expanded_height)]
 
     # 映射原始网格到扩展网格
     for y, row in enumerate(raw_grid):
@@ -82,7 +81,7 @@ def expand_grid(raw_grid, targets):
 
 # Define the Block class
 class Block:
-    def __init__(self, block_type, position, fixed=False):
+    def __init__(self, block_type, position):
         """
         Initializes a new instance of the Block class.
 
@@ -92,12 +91,9 @@ class Block:
             'B' for opaque block, or 'C' for refract block.
         position : tuple of int
             The (x, y) coordinates of the block on the grid.
-        fixed : boolean
-            Whether the block is fixed on grid or not.
         """
         self.block_type = block_type # 'A' for reflect, 'B' for opaque, 'C' for refract
         self.position = position
-        self.fixed = fixed
 
     def interact_with_Lazor(self, Lazor_position, Lazor_direction):
         # Determine which direction the Lazor came from
@@ -124,49 +120,72 @@ class Block:
         
 class Lazor:
     
-    def __init__(self, position, direction):
+    def __init__(self, position, direction, active=True):
         self.position = position
         self.direction = direction
+        self.active = active
 
     def move(self):
         # Move the Lazor to the next position based on its direction
         self.position = (self.position[0] + self.direction[0], self.position[1] + self.direction[1])
 
-def meet_block(grid, Lazor, blocks):
+def meet_block(grid, lazor, blocks_dict):
     """
     Check if the Lazor interacts with a block by checking both horizontally and vertically adjacent points.
     """
-    x, y = Lazor.position
-    dx, dy = Lazor.direction
+    x, y = lazor.position
+    dx, dy = lazor.direction
     new_Lazors = []
 
     # Check both adjacent points
     adjacent_positions = [(x + dx, y), (x, y + dy)]
     for position in adjacent_positions:
-        if position in blocks:
-            block = blocks[position]
-            interaction_result = block.interact_with_Lazor(Lazor.position, Lazor.direction)
+        if position in blocks_dict:
+            block = blocks_dict[position]
+            interaction_result = block.interact_with_Lazor(lazor.position, lazor.direction)
+            if interaction_result is None:
+                lazor.active = False
+                return [lazor]
             
             if interaction_result:
                 if isinstance(interaction_result, list):
                     # If the block is refractive, it creates multiple new Lazors
                     for new_direction in interaction_result:
-                        new_Lazors.append(Lazor(Lazor.position, new_direction))
+                        new_Lazors.append(Lazor(lazor.position, new_direction))
                 else:
                     # For a reflective block, change the direction
-                    new_Lazors.append(Lazor(Lazor.position, interaction_result))
+                    new_Lazors.append(Lazor(lazor.position, interaction_result))
                 break  # If we interact with a block, we don't check the other point
 
     if not new_Lazors:
         # If no block interaction, the Lazor continues in the same direction
-        new_Lazors.append(Lazor(Lazor.position, Lazor.direction))
+        new_Lazors.append(Lazor(lazor.position, lazor.direction))
 
     return new_Lazors
 
+def generate_possible_grids(initial_grid, block_dict):
+    empty_positions = [(x, y) for y in range(len(initial_grid)) 
+                             for x in range(len(initial_grid[0])) 
+                             if initial_grid[y][x] == 'o']
+
+    block_types = sorted([b for b, count in block_dict.items() for i in range(count)])
+    total_blocks = len(block_types)
+
+    result_grids = []
+    for positions in itertools.combinations(empty_positions, total_blocks):
+        for block_order in set(itertools.permutations(block_types, total_blocks)):
+            new_grid = [row[:] for row in initial_grid]
+            for position, block_type in zip(positions, block_order):
+                x, y = position
+                new_grid[y][x] = block_type
+            result_grids.append(new_grid)
+
+    return result_grids
+
+
 def pos_chk(grid, Lazor):
     '''
-    This function is used to check if the lazor and its next step
-    is inside the grid, if it is not, return to the last step.
+    This function is used to check if the lazor is inside the grid
 
     **Parameters:**
 
@@ -175,79 +194,104 @@ def pos_chk(grid, Lazor):
 
     **Returns**
 
-        True if the lazer is still in the grid
+        True if the lazer is out of the grid
     '''
 
     grid_size = (len(grid[0]), len(grid))
 
-    return 0 <= Lazor.position[0] < grid_size[0] and 0 <= Lazor.position[1] < grid_size[1]
-
+    return (Lazor.position[0] < 0 or Lazor.position[0] >= grid_size[0] or
+            Lazor.position[1] < 0 or Lazor.position[1] >= grid_size[1])
 def simulate(grid, Lazors, blocks):
-    """
-    Simulate the movement of Lazors through a grid with blocks.
-    
-    Parameters:
-    grid : list of list of int
-        The grid representation, where numbers indicate different entities (0 for empty, 1 for block, etc.)
-    Lazors : list of Lazor
-        The Lazors present in the grid at the start of simulation.
-    blocks : list of Block
-        The blocks present in the grid that can interact with the Lazors.
-        
-    Returns:
-    list of tuple
-        The positions of Lazors that hit target points.
-    """
-    # Define the grid size
-    grid_size = (len(grid[0]), len(grid))
-    
-    # Convert the list of blocks to a dictionary for easy access
-    block_dict = {block.position: block for block in blocks}
-    print(block_dict)
+
+    # Store the original state of each Lazor
+    original_states = [(lazor.position, lazor.direction) for lazor in Lazors]
+
+    # Function to reset Lazors to their original states
+    def reset_Lazors():
+        for i, lazor in enumerate(Lazors):
+            orig_pos, orig_dir = original_states[i]
+            lazor.position = orig_pos
+            lazor.direction = orig_dir
+
+    # 将方块转换为字典，以方便检索
+    blocks_dict = {block.position: block for block in blocks}
+
+    # 存储活跃的激光
+    active_Lazors = Lazors.copy()
+
     # Initialize the set for storing Lazor positions that hit targets
     hit_targets = set()
-    
-    # Loop until there are no more Lazors to simulate
-    while Lazors:
-        new_Lazors = []
-        for Lazor in Lazors:
-            # Move the Lazor one step
-            Lazor.move()
-            
-            # Check if Lazor is out of bounds and skip if it is
-            if pos_chk(grid, Lazor):
+
+        # Initial block interaction check for each Lazor at starting position
+    new_Lazors = []
+    for lazor in active_Lazors:
+        interaction_results = meet_block(grid, lazor, blocks_dict)
+        for result in interaction_results:
+            if not pos_chk(grid, result):
+                new_Lazors.append(result)
+    active_Lazors = new_Lazors
+
+    while active_Lazors:
+        new_Lazors = []  # To store Lazors for the next iteration
+
+        for lazor in active_Lazors:
+            if lazor.active:
+                # Move the Lazor
+                lazor.move()
+
+            # Check if Lazor is out of the grid
+            if pos_chk(grid, lazor):
+                continue  # Skip to the next Lazor
+
+            if not lazor.active:
+                if grid[result.position[1]][result.position[0]] == 't':  
+                        hit_targets.add(result.position)
                 continue
-            
-            # Check if the Lazor hits a target point
-            if grid[Lazor.position[1]][Lazor.position[0]] == 't':
-                hit_targets.add(Lazor.position)
-                continue  # Lazor stops if it hits a target point
-            
-            # Check if the Lazor hits a block
-            new_Lazors = meet_block(grid, Lazor, blocks)
-                    
-        # Update the Lazors for the next iteration
-        Lazors = new_Lazors
-    
-    # Return the positions of Lazors that hit target points
+
+            # Block interaction check after moving
+            interaction_results = meet_block(grid, lazor, blocks_dict)
+            for result in interaction_results:
+                if not pos_chk(grid, result):
+                    new_Lazors.append(result)
+
+                    # Check if Lazor hits a target
+                    if grid[result.position[1]][result.position[0]] == 't':  
+                        hit_targets.add(result.position)
+
+        active_Lazors = new_Lazors
+
+    # After simulation, reset Lazors to their original states
+    reset_Lazors()
+
+    if hit_targets:
+        print(hit_targets)
+
     return hit_targets
 
-'''记录一下想到的，simulate()会返回目前光路经过的目标点的集合。
-现在还至少需要两个函数， 一个solve()，其中targets == hit_targests时问题解决，循环停止。
-另一个函数写着写着忘了，大致应该是在solve()中涉及block怎么放的问题的。
-哦还会有一个save结果的，保存类型还要商量下，现在空想一下光路不太好保存，保存grid的话应该很简单，但是也得需要block放完记录一下。
-'''
+def solve(grids, lazors, targets, blocks, name):
+    for grid in grids:
+        expanded_grid = expand_grid(grid, targets)
+        blocks_list = []
+        for y, row in enumerate(expanded_grid):
+            for x, value in enumerate(row):
+                if value in 'ABC':
+                # If it belongs to one of A、B、C ，we new one Block bject
+                    block = Block(value, (x, y))
+                    blocks_list.append(block)
+        # print(blocks_list)
+        passed_targets = simulate(expanded_grid, lazors, blocks_list)
+        if targets == passed_targets:
+            save_grid_as_text(grid, name)
+            break
 
+def save_grid_as_text(grid, filename):
+    with open(filename, 'w') as file:
+        for row in grid:
+            file.write(' '.join(row) + '\n')
 
 if __name__ == "__main__":                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-    bff_file = "./Lazors/Lazor data/tiny_5.bff"  # replace with your .bff file name
-    # print(read_bff_file(bff_file))
+    bff_file = "./Lazors/Lazor data/mad_7.bff"  # replace with .bff file name
+    name = os.path.basename(bff_file[:-4])
     grid, lazors, targets, blocks = read_bff_file(bff_file)
-    # print(expand_grid(grid, targets))
-    print(blocks)
-    print(lazors[0].position)
-    print(targets)
-    expanded_grid = expand_grid(grid, targets)
-    # print(meet_block(expanded_grid,lazors[0],blocks)[0].position)
-    # print(simulate_Lazor_movement(grid, lazors[0], targets, blocks))
-    # main(bff_file)
+    grids = generate_possible_grids(grid, blocks)
+    solve(grids, lazors, targets, blocks, name)
