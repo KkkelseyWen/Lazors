@@ -8,19 +8,19 @@ This repository contains the Lazor project developed for EN.540.635 Software Car
 - Ziyi Wang: zwang412@jh.edu
 
 ## Background
-Lazors is a puzzle game of lasers and mirrors in which players need to arrange blocks wisely to hit all
+&ensp;&ensp;Lazors is a puzzle game of lasers and mirrors in which players need to arrange blocks wisely to hit all
 the targets. It offers more than a hundred levels, ranging from easy distractions to hard challenges.
    
-This game is available on [Steam](https://steamcommunity.com/app/341290), 
+&ensp;&ensp;This game is available on [Steam](https://steamcommunity.com/app/341290), 
 [Google Play](https://play.google.com/store/apps/details?id=net.pyrosphere.lazors&hl=en&pli=1) 
 and [Apple Store](https://apps.apple.com/us/app/lazors/id386458926).
 
 ## Project Overview
 
-The Lazors project aims find solutions to specified lazor puzzles.
+&ensp;&ensp;The Lazors project aims find solutions to specified lazor puzzles.
 
 ### How to use it?
-Get the .bff file which represents the puzzle and put it into the program to generate a solution.
+&ensp;&ensp;Get the .bff file which represents the puzzle and put it into the program to generate a solution.
 A standard .bff file contains the following information:
 ```
 GRID START
@@ -40,29 +40,30 @@ P 4 3
 P 2 5
 P 4 7
 ```
-For the **GRID START** and **GRID STOP** part:  
+- For the **GRID START** and **GRID STOP** part:    
 
-x = no block allowed   
-o = blocks allowed   
-A = fixed reflect block   
-B = fixed opaque block   
-C = fixed refract block  
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;x = no block allowed   
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;o = blocks allowed   
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;A = fixed reflect block   
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;B= fixed opaque block   
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;C = fixed refract block  
 
-For the **Block** part:    
+- For the **Block** part:    
 
-A, B, C and their corresponding number represents 
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;A, B, C and their corresponding number represents 
 the block types and numbers the players have to play with
 
-For the **Lazor** part:   
-L 2 7 1 -1   
-Each L stands for a lazor point    
-The first 2 numbers symbolize the coordinates of lazor   
-The last 2 numbers symbolize the directions    
-Define direction 1:right/up;  -1:left/down
+- For the **Lazor** part:   
+&ensp;&ensp;L 2 7 1 -1   
+&ensp;&ensp;Each L stands for a lazor point    
+&ensp;&ensp;The first 2 numbers symbolize the coordinates of lazor   
+&ensp;&ensp;The last 2 numbers symbolize the directions    
+&ensp;&ensp;Define direction 1:right/up;  -1:left/down    
 
-For the **Target** part:    
-Each P stands for a target point  
-The following numbers represent its coordinate
+
+- For the **Target** part:    
+&ensp;&ensp;Each P stands for a target point  
+&ensp;&ensp;The following numbers represent its coordinate
 
 The output txt looks as below:
 ```
@@ -70,7 +71,7 @@ A B A
 o o o
 A C o
 ```
-According to the solution file the program outputs, put you blocks as instructed,
+&ensp;&ensp;According to the solution file the program outputs, put you blocks as instructed,
 then Bang! Problem Solved!
 
 ## Solutions
