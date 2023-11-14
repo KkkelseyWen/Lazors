@@ -460,7 +460,7 @@ def solve(grids, lazors, targets, filename):
 
 
 if __name__ == "__main__":
-    bff_file = "./Lazor data/dark_1.bff"  # replace with .bff file name
+    bff_file = "./Lazor data/tiny_5.bff"  # replace with .bff file name
     name = os.path.basename(bff_file[:-4])
 
     grid, lazors, targets, blocks = read_bff_file(bff_file)
