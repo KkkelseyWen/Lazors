@@ -600,7 +600,7 @@ def solve_puzzle(file_path):
 
     # Create a grid object
     grid = Grid(grid_data, targets)
-    print("The initial grid")
+    print("The initial grid: ")
     for row in grid.expanded_grid:
         print(''.join(row))
     solver = Solver(grid, blocks, lasers, targets)
