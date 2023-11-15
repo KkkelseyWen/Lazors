@@ -600,9 +600,6 @@ def solve_puzzle(file_path):
 
     # Create a grid object
     grid = Grid(grid_data, targets)
-    print("the initial problem")
-    for row in grid.expanded_grid:
-        print(''.join(row))
 
     # Create a solver object
     solver = Solver(grid, blocks, lasers, targets)
@@ -612,12 +609,23 @@ def solve_puzzle(file_path):
 
     # Use a lock to synchronize printing the solution or failure message
     with output_lock:
+        solution_output = ""
         if solution:
-            print(f"Solution found for {file_path}:")
+            solution_output += f"Solution found for {file_path}:\n"
             for row in grid.expanded_grid:
-                print(''.join(row))
+                solution_output += ''.join(row) + "\n"
         else:
-            print(f"No solution found for {file_path}.")
+            solution_output += f"No solution found for {file_path}.\n"
+
+        # Print the solution or failure message
+        print(solution_output)
+
+        # Construct the output file name
+        output_file_name = file_path.split('.')[0] + '_solution.txt'
+
+        # Write the solution or failure message to a text file
+        with open(output_file_name, 'w') as file:
+            file.write(solution_output)
 
 
 def parallel_solve(bff_file):
