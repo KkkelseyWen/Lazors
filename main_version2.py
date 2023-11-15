@@ -646,5 +646,5 @@ def parallel_solve(bff_file):
 
 
 if __name__ == "__main__":
-    bff_file = "tiny_5.bff"  # replace with your .bff file name
+    bff_file = "./Lazor data/tiny_5.bff"  # replace with your .bff file name
     parallel_solve(bff_file)
