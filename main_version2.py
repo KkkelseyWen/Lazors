@@ -600,6 +600,10 @@ def solve_puzzle(file_path):
 
     # Create a grid object
     grid = Grid(grid_data, targets)
+    print("The initial grid")
+    for row in grid.expanded_grid:
+        print(''.join(row))
+    solver = Solver(grid, blocks, lasers, targets)
 
     # Create a solver object
     solver = Solver(grid, blocks, lasers, targets)
@@ -646,5 +650,5 @@ def parallel_solve(bff_file):
 
 
 if __name__ == "__main__":
-    bff_file = "./Lazor data/tiny_5.bff"  # replace with your .bff file name
+    bff_file = "./Lazor data/yarn_5.bff"  # replace with your .bff file name
     parallel_solve(bff_file)
