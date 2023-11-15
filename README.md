@@ -58,18 +58,31 @@ the block types and numbers the players have to play with
 &ensp;&ensp;Each L stands for a lazor point    
 &ensp;&ensp;The first 2 numbers symbolize the coordinates of lazor   
 &ensp;&ensp;The last 2 numbers symbolize the directions    
-&ensp;&ensp;Define direction 1:right/up;  -1:left/down    
+&ensp;&ensp;Define direction 1:right/up;  -1:left/down
 
 
-- For the **Target** part:    
-&ensp;&ensp;Each P stands for a target point  
+- For the **Target** part:
+&ensp;&ensp;** To note**: They are marked as '?' in **Version2**.  
+&ensp;&ensp;Each P stands for a target point
 &ensp;&ensp;The following numbers represent its coordinate
 
-The output txt looks as below:
+The output txt in **Version1** looks as below:
 ```
 A B A
 o o o
 A C o
+```
+
+The output txt in **Version2** looks as below:
+```
+Solution found for ./Lazor data/tiny_5.bff:
++-+-+-+
+|A|B|A|
++?+-+-+
+|o|o|o?
++-+-+-+
+|A|C|o|
++-+-+-+
 ```
 &ensp;&ensp;According to the solution file the program outputs, put you blocks as instructed,
 then Bang! Problem Solved!
