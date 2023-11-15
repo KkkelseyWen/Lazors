@@ -59,7 +59,8 @@ def read_bff_file(filename):
 
                 grid.append(grid_line)
 
-            elif line.startswith('A ') or line.startswith('B ') or line.startswith('C '):
+            elif line.startswith('A ') or line.startswith('B ')\
+                    or line.startswith('C '):
                 block_type, count = line.split()
                 blocks[block_type] = int(count)
 
@@ -103,7 +104,8 @@ def expand_grid(raw_grid, targets):
     expanded_width = len(raw_grid[0]) * 2 + 1
 
     # initialize the grid
-    expanded_grid = [['0' for i in range(expanded_width)] for i in range(expanded_height)]
+    expanded_grid = [['0' for i in range(expanded_width)]
+                     for i in range(expanded_height)]
 
     for y, row in enumerate(raw_grid):
 
@@ -187,9 +189,11 @@ class Block:
             # adds a reflection direction
 
             if x_in and not y_in:
-                return [(Lazor_direction[0], Lazor_direction[1]), (-Lazor_direction[0], Lazor_direction[1])]
+                return [(Lazor_direction[0], Lazor_direction[1]),
+                        (-Lazor_direction[0], Lazor_direction[1])]
             elif y_in and not x_in:
-                return [(Lazor_direction[0], Lazor_direction[1]), (Lazor_direction[0], -Lazor_direction[1])]
+                return [(Lazor_direction[0], Lazor_direction[1]),
+                        (Lazor_direction[0], -Lazor_direction[1])]
 
         # other types of blocks or does not interact
         return None
@@ -210,7 +214,8 @@ class Lazor:
 
     def move(self):
         # Move lazor to the next position based on its direction
-        self.position = (self.position[0] + self.direction[0], self.position[1] + self.direction[1])
+        self.position = (self.position[0] + self.direction[0],
+                         self.position[1] + self.direction[1])
 
 
 def meet_block(lazor, blocks_dict):
@@ -242,7 +247,8 @@ def meet_block(lazor, blocks_dict):
 
             block = blocks_dict[position]
 
-            interaction_result = block.interact_with_Lazor(lazor.position, lazor.direction)
+            interaction_result = block.interact_with_Lazor(lazor.position,
+                                                           lazor.direction)
 
             if interaction_result is None:
                 # Return a Lazor with no direction change (stopped)
@@ -286,7 +292,8 @@ def generate_possible_grids(initial_grid, block_dict):
                        for x in range(len(initial_grid[0]))
                        if initial_grid[y][x] == 'o']
 
-    block_types = sorted([b for b, count in block_dict.items() for i in range(count)])
+    block_types = sorted([b for b, count in block_dict.items()
+                          for i in range(count)])
     total_blocks = len(block_types)
 
     result_grids = []
@@ -294,7 +301,8 @@ def generate_possible_grids(initial_grid, block_dict):
     # generate all the possible ways of placement
     for positions in itertools.combinations(empty_positions, total_blocks):
 
-        for block_order in set(itertools.permutations(block_types, total_blocks)):
+        for block_order in set(itertools.permutations(block_types,
+                                                      total_blocks)):
             # copy the original grid for placement
             new_grid = [row[:] for row in initial_grid]
 
@@ -329,7 +337,8 @@ def pos_chk(grid, Lazor):
 
 def simulate(grid, Lazors, blocks):
     """
-    This function simulate the lazor path and finds all the passed target points
+    This function simulate the lazor path and finds
+    all the passed target points
 
     Parameters:
         grid: *list*
