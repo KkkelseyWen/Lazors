@@ -3,9 +3,9 @@
 This repository contains the Lazor project developed for EN.540.635 Software Carpentry FA2023.
 
 ## Collaborators
-- Wen Zhang: wzhan156@jh.edu
-- Xinglin Chen: xchen255@jh.edu
-- Ziyi Wang: zwang412@jh.edu
+- Wen Zhang (KkkelseyWen): wzhan156@jh.edu
+- Xinglin Chen (WalkingWithClouds): xchen255@jh.edu
+- Ziyi Wang (sweetziyi): zwang412@jh.edu
 
 ## Background
 &ensp;&ensp;Lazors is a puzzle game of lasers and mirrors in which players need to arrange blocks wisely to hit all
