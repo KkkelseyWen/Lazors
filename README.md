@@ -128,6 +128,7 @@ The core algorithm iterates through all possible block position combinations in 
 
 #### Output
 - A list of tuples representing the placed blocks' types and positions, or None if no solution is found.
+- Generates a `.txt` file that displays the input grid with the solution for block positions.
 
 #### Test Results
 - Successfully solve all puzzles, typically in under a minute.
