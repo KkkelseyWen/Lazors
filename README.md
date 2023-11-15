@@ -101,12 +101,30 @@ The core algorithm iterates through all possible block position combinations in 
 
 ### Version 2
 #### Algorithm
-&ensp;&ensp;Deep Search First   
+- The core algorithm is Depth-First Search (DFS) for exploring possible block placements. 
+- Multi-threading is utilized in execution, allowing parallel processing of different puzzle configurations or simultaneous handling of multiple puzzles.
 
 #### Input
 - The same as the previous version of the puzzle, which includes a grid layout, available blocks, lasers, and required target points.
 
 #### Process
+- **Initialization**: The grid is initialized with positions marked as 'o', where blocks can be placed. Blocks ('A', 'B', 'C') are available in specified quantities.
+
+- **Block Placement**:
+  - The `Solver` class's solve method orchestrates the placement of blocks on the grid.  It uses a recursive approach to iteratively place blocks in empty positions and backtrack if necessary.
+  - The `recursive_solve` method within the `Solver` class is the key to understanding the placement process.  It iterates through each empty position on the grid and tries placing different block types (or leaving it empty denoted by 'o').
+  - The order in which blocks are placed is determined by the iteration over the block types in the line for block_type in 'ABCo':.  This means the algorithm tries placing an 'A' block first, then 'B', 'C', and finally considers leaving the position empty.
+  - If a block type is chosen, the method updates the grid and the available block count, then recursively calls itself for the next position.
+  - If no solution is found for a particular placement, the algorithm backtracks, which involves undoing the last placement and trying the next block type in the sequence.
+  - The condition for a successful solution is when all lasers hit the required targets.
+
+- **Laser Simulation**: After each block placement, the paths of lasers are simulated to check if they intersect with all target points.
+
+- **Backtracking**: If a configuration fails (i.e., not all targets are hit), the algorithm backtracks by removing the last placed block and trying a different configuration.
+
+- **Multi-threading Implementation**: The puzzle solver employs multi-threading to potentially solve multiple puzzles in parallel. This is useful for complex grids or multiple puzzle instances, improving performance and efficiency.
+  
+- **Recursive Solution Finding**: The solver uses a recursive method to navigate through the possible configurations, constantly checking against the laser path simulation to find a valid solution.
 
 #### Output
 - A list of tuples representing the placed blocks' types and positions, or None if no solution is found.
@@ -114,10 +132,10 @@ The core algorithm iterates through all possible block position combinations in 
 #### Test Results
 - Successfully solve all puzzles, typically in under a minute.
 
-### Test Results
+### Runtime
 | Runtime       |                 |                 |
 | ------------- | --------------- | --------------- |
-| **Level **        | **Version_1**       | **Version_2**       |
+| **Level**        | **Version_1**       | **Version_2**       |
 | dark_1        | < 15 sec | < 15 sec  |
 | mad_1         | < 15 sec  | < 15 sec |
 | mad_4         | < 15 sec  | < 15 sec  |
