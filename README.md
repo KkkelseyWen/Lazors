@@ -104,12 +104,27 @@ The core algorithm iterates through all possible block position combinations in 
 &ensp;&ensp;Deep Search First   
 
 #### Input
-&ensp;&ensp;Same as the previous version.
+- The same as the previous version of the puzzle, which includes a grid layout, available blocks, lasers, and required target points.
+
 #### Process
 
 #### Output
+- A list of tuples representing the placed blocks' types and positions, or None if no solution is found.
 
 #### Test Results
+- Successfully solve all puzzles, typically in under a minute.
 
+### Test Results
+| Runtime       |                 |                 |
+| ------------- | --------------- | --------------- |
+| **Level **        | **Version_1**       | **Version_2**       |
+| dark_1        | < 15 sec | < 15 sec  |
+| mad_1         | < 15 sec  | < 15 sec |
+| mad_4         | < 15 sec  | < 15 sec  |
+| mad_7         | around 1 min    | < 15 sec  |
+| numbered_6    | < 15 sec  | < 15 sec  |
+| showstopper_4 | < 15 sec  | < 15 sec  |
+| tiny_5        | < 15 sec  | < 15 sec  |
+| yarn_5        | 7-8 min         | < 15 sec  |
 
 
