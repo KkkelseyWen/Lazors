@@ -1,4 +1,5 @@
 import threading
+import os
 
 
 # Define the Block class
@@ -624,8 +625,11 @@ def solve_puzzle(file_path):
         # Print the solution or failure message
         print(solution_output)
 
+        # Extract the base file name without extension and path
+        base_file_name = os.path.splitext(os.path.basename(file_path))[0]
+
         # Construct the output file name
-        output_file_name = file_path.split('.')[0] + '_solution.txt'
+        output_file_name = base_file_name + '_solution.txt'
 
         # Write the solution or failure message to a text file
         with open(output_file_name, 'w') as file:
@@ -650,5 +654,5 @@ def parallel_solve(bff_file):
 
 
 if __name__ == "__main__":
-    bff_file = "./Lazor data/yarn_5.bff"  # replace with your .bff file name
+    bff_file = "./Lazor data/tiny_5.bff"  # replace with your .bff file name
     parallel_solve(bff_file)
