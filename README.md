@@ -78,7 +78,7 @@ then Bang! Problem Solved!
 ### Version 1
 
 #### Algorithm
-The core algorithm iterates through all possible block combinations to identify the correct solution.
+The core algorithm iterates through all possible block position combinations in the grid to identify the correct solution.
 
 #### Input
 - Reads `.bff` files and converts them into variables for processing.
