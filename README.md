@@ -62,7 +62,7 @@ the block types and numbers the players have to play with
 
 
 - For the **Target** part:
-&ensp;&ensp; **To note**: They are marked as '?' in **Version2**.    
+  **To note**: They are marked as '?' in **Version2**.    
 &ensp;&ensp; Each P stands for a target point    
 &ensp;&ensp; The following numbers represent its coordinate    
 
